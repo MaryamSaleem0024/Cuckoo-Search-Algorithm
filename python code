@@ -1,0 +1,163 @@
+import numpy as np
+import random
+
+def objective_function(route, distance_matrix, speed=40):
+    """
+    Calculates total delivery time based on a predefined distance matrix.
+    Assumes an average speed (km/h) to estimate travel time.
+    """
+    total_time = 0
+    for i in range(len(route) - 1):
+        from_index = route[i]
+        to_index = route[i + 1]
+        distance = distance_matrix[from_index][to_index]  # Distance in km
+        travel_time = (distance / speed) * 60  # Convert to minutes
+        total_time += travel_time
+    return total_time
+
+def levy_flight(Lambda=1.5):
+    sigma = (np.math.gamma(1 + Lambda) * np.sin(np.pi * Lambda / 2) /
+             (np.math.gamma((1 + Lambda) / 2) * Lambda * 2**((Lambda - 1) / 2))) ** (1 / Lambda)
+    u = np.random.normal(0, sigma, 1)
+    v = np.random.normal(0, 1, 1)
+    step = u / abs(v)**(1 / Lambda)
+    return step
+
+def cuckoo_search(route, distance_matrix, n_nests=10, iterations=100, Lambda=1.5):
+    best_route = route[:]
+    best_time = objective_function(route, distance_matrix)
+    nests = [route[:]]
+
+    all_routes = []
+
+    for _ in range(iterations):
+        new_nests = []
+        for _ in range(n_nests):
+            new_route = route[:]
+            random.shuffle(new_route)  # Shuffle route to create a new solution
+            new_time = objective_function(new_route, distance_matrix)
+
+            all_routes.append((new_route[:], new_time))
+
+            if new_time < best_time:
+                best_route = new_route[:]
+                best_time = new_time
+
+            new_nests.append(new_route)
+        nests = new_nests
+
+    return best_route, best_time, all_routes
+
+# Sample locations in Lahore including Lahore College for Women University (indices represent locations)
+locations = [
+    "Gulberg", "DHA", "Johar Town", "Model Town", "Cantt", "Lahore College for Women University",
+    "Shadman", "Ichhra", "Anarkali", "Mozang", "Garhi Shahu", "Shalimar", "Mughalpura", "Faisal Town", "Wapda Town",
+    "Township", "Green Town", "Samanabad", "Allama Iqbal Town", "Gari Shahu", "Walled City", "Saddar", "Garden Town",
+    "Ferozepur Road", "Mall Road", "Shahdara", "Thokar Niaz Baig", "Badami Bagh", "Raiwind", "Bahria Town", "Jubilee Town",
+    "Valencia Town", "Askari 10", "Johar Town Phase 2", "Iqbal Park", "Mansoora", "Sabzazar", "Multan Road", "LDA Avenue 1",
+    "Defence Road", "Jail Road", "Sundar Industrial Estate", "Kot Lakhpat", "Peco Road", "Saggian", "Mughalpura Dry Port",
+    "Shahkam Chowk", "Eden Gardens", "Gajju Matah", "Chungi Amar Sidhu", "Mehmood Booti", "Harbanspura"
+]
+
+# Generate a random distance matrix (values between 1km and 20km)
+distance_matrix["Gulberg"]["DHA"] = 25  # Distance in km
+distance_matrix["DHA"]["Gulberg"] = 25  # Ensure symmetry
+distance_matrix["Gulberg"]["Johar Town"] = 12
+distance_matrix["Johar Town"]["Gulberg"] = 12
+
+distance_matrix["Gulberg"]["Model Town"] = 8
+distance_matrix["Model Town"]["Gulberg"] = 8
+
+distance_matrix["DHA"]["Johar Town"] = 15
+distance_matrix["Johar Town"]["DHA"] = 15
+
+distance_matrix["DHA"]["Model Town"] = 7
+distance_matrix["Model Town"]["DHA"] = 7
+
+distance_matrix["Cantt"]["Lahore College for Women University"] = 10
+distance_matrix["Lahore College for Women University"]["Cantt"] = 10
+
+distance_matrix["Shadman"]["Ichhra"] = 3
+distance_matrix["Ichhra"]["Shadman"] = 3
+
+distance_matrix["Anarkali"]["Mozang"] = 4
+distance_matrix["Mozang"]["Anarkali"] = 4
+
+distance_matrix["Garhi Shahu"]["Shalimar"] = 6
+distance_matrix["Shalimar"]["Garhi Shahu"] = 6
+
+distance_matrix["Mughalpura"]["Faisal Town"] = 16
+distance_matrix["Faisal Town"]["Mughalpura"] = 16
+
+distance_matrix["Wapda Town"]["Township"] = 5
+distance_matrix["Township"]["Wapda Town"] = 5
+
+# Additional distances:
+distance_matrix["Samanabad"]["Allama Iqbal Town"] = 9
+distance_matrix["Allama Iqbal Town"]["Samanabad"] = 9
+
+distance_matrix["Gari Shahu"]["Walled City"] = 6
+distance_matrix["Walled City"]["Gari Shahu"] = 6
+
+distance_matrix["Saddar"]["Garden Town"] = 14
+distance_matrix["Garden Town"]["Saddar"] = 14
+
+distance_matrix["Ferozepur Road"]["Mall Road"] = 13
+distance_matrix["Mall Road"]["Ferozepur Road"] = 13
+
+distance_matrix["Shahdara"]["Thokar Niaz Baig"] = 18
+distance_matrix["Thokar Niaz Baig"]["Shahdara"] = 18
+
+distance_matrix["Badami Bagh"]["Raiwind"] = 22
+distance_matrix["Raiwind"]["Badami Bagh"] = 22
+
+distance_matrix["Bahria Town"]["Jubilee Town"] = 17
+distance_matrix["Jubilee Town"]["Bahria Town"] = 17
+
+distance_matrix["Valencia Town"]["Askari 10"] = 20
+distance_matrix["Askari 10"]["Valencia Town"] = 20
+
+distance_matrix["Johar Town Phase 2"]["Iqbal Park"] = 10
+distance_matrix["Iqbal Park"]["Johar Town Phase 2"] = 10
+
+distance_matrix["Mansoora"]["Sabzazar"] = 7
+distance_matrix["Sabzazar"]["Mansoora"] = 7
+
+distance_matrix["Multan Road"]["LDA Avenue 1"] = 12
+distance_matrix["LDA Avenue 1"]["Multan Road"] = 12
+
+distance_matrix["Defence Road"]["Jail Road"] = 8
+distance_matrix["Jail Road"]["Defence Road"] = 8
+
+distance_matrix["Sundar Industrial Estate"]["Kot Lakhpat"] = 18
+distance_matrix["Kot Lakhpat"]["Sundar Industrial Estate"] = 18
+
+distance_matrix["Peco Road"]["Saggian"] = 21
+distance_matrix["Saggian"]["Peco Road"] = 21
+
+distance_matrix["Mughalpura Dry Port"]["Shahkam Chowk"] = 19
+distance_matrix["Shahkam Chowk"]["Mughalpura Dry Port"] = 19
+
+distance_matrix["Eden Gardens"]["Gajju Matah"] = 11
+distance_matrix["Gajju Matah"]["Eden Gardens"] = 11
+
+distance_matrix["Chungi Amar Sidhu"]["Mehmood Booti"] = 9
+distance_matrix["Mehmood Booti"]["Chungi Amar Sidhu"] = 9
+
+distance_matrix["Harbanspura"]["Gulberg"] = 16
+distance_matrix["Gulberg"]["Harbanspura"] = 16
+# Initial route (random order)
+initial_route = locations[:]
+random.shuffle(initial_route)
+
+# Run Cuckoo Search Algorithm
+best_route, best_time, all_routes = cuckoo_search(initial_route, distance_matrix)
+
+# Print Optimized Delivery Route and Time
+print("Best Delivery Route:", best_route)
+print("Estimated Delivery Time (minutes):", best_time)
+
+# Print all attempted routes and their times
+print("\nAll Attempted Routes and Their Times:")
+for route, time in all_routes:
+    print("Route:", route, "Time:", time)
